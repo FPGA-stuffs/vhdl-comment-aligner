@@ -3,12 +3,13 @@
     "displayName": "VHDL Comment Aligner",
     "description": "Automatically aligns VHDL comments to a specified column",
     "version": "0.0.1",
+    "publisher": "samuelosafehinti",
     "author": "Samuel Osafehinti",
     "license": "MIT",
     "engines": {
       "vscode": "^1.85.0"
     },
-    "categories": [
+    "categoriescier": [
       "Formatters",
       "Programming Languages"
     ],
@@ -37,7 +38,7 @@
         {
           "command": "vhdlCommentAligner.deIndentCommentOnBackspace",
           "key": "backspace",
-          "when": "editorTextFocus && editorLangId == vhdl && !inSnippetMode"
+          "when": "editorTextFocus && editorLangId == vhdl && !inSnippetMode && !suggestWidgetVisible"
         }
       ]
     },

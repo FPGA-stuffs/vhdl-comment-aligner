@@ -1,0 +1,52 @@
+{
+    "name": "vhdl-comment-aligner",
+    "displayName": "VHDL Comment Aligner",
+    "description": "Automatically aligns VHDL comments to a specified column",
+    "version": "0.0.1",
+    "engines": {
+      "vscode": "^1.85.0"
+    },
+    "categories": [
+      "Formatters",
+      "Programming Languages"
+    ],
+    "activationEvents": [
+      "onLanguage:vhdl"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+      "configuration": {
+        "title": "VHDL Comment Aligner",
+        "properties": {
+          "vhdlCommentAligner.commentColumn": {
+            "type": "integer",
+            "default": 95,
+            "minimum": 90,
+            "description": "The column number where VHDL comments should start (1-based)."
+          }
+        }
+      },
+      "keybindings": [
+        {
+          "command": "vhdlCommentAligner.alignCommentOnTab",
+          "key": "tab",
+          "when": "editorTextFocus && editorLangId == vhdl && !inSnippetMode && !suggestWidgetVisible"
+        },
+        {
+          "command": "vhdlCommentAligner.deIndentCommentOnBackspace",
+          "key": "backspace",
+          "when": "editorTextFocus && editorLangId == vhdl && !inSnippetMode"
+        }
+      ]
+    },
+    "scripts": {
+      "vscode:prepublish": "npm run compile",
+      "compile": "tsc -p ./",
+      "watch": "tsc -watch -p ./"
+    },
+    "devDependencies": {
+      "@types/vscode": "^1.85.0",
+      "@types/node": "^20.12.7",
+      "typescript": "^5.4.5"
+    }
+  }

@@ -14,20 +14,52 @@ export function activate(context: vscode.ExtensionContext) {
         return column;
     };
 
-    // Command to handle Tab key for indenting comments with multi-line cursors
-    const alignCommentOnTab = vscode.commands.registerCommand('vhdlCommentAligner.alignCommentOnTab', () => {
+    // Function to update the context key based on cursor position
+    const updateCursorContext = () => {
         const editor = vscode.window.activeTextEditor;
         if (!editor || editor.document.languageId !== 'vhdl') {
-            return; // Only process VHDL files
+            vscode.commands.executeCommand('setContext', 'vhdlCommentAligner.cursorBeforeComment', false);
+            return;
+        }
+
+        let isBeforeComment = false;
+        for (const selection of editor.selections) {
+            const line = editor.document.lineAt(selection.active.line);
+            const text = line.text;
+            const commentIndex = text.indexOf('--');
+
+            // Check if cursor is immediately before --
+            if (commentIndex !== -1 && selection.active.character === commentIndex) {
+                isBeforeComment = true;
+                break;
+            }
+        }
+
+        vscode.commands.executeCommand('setContext', 'vhdlCommentAligner.cursorBeforeComment', isBeforeComment);
+    };
+
+    // Update context key on selection or editor change
+    context.subscriptions.push(
+        vscode.window.onDidChangeTextEditorSelection(updateCursorContext),
+        vscode.window.onDidChangeActiveTextEditor(updateCursorContext)
+    );
+
+    // Initial update of context key
+    updateCursorContext();
+
+    // Command to handle Tab key for indenting comments
+    const alignCommentOnTab = vscode.commands.registerCommand('vhdlCommentAligner.alignCommentOnTab', async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor || editor.document.languageId !== 'vhdl') {
+            return;
         }
 
         const config = vscode.workspace.getConfiguration('vhdlCommentAligner');
-        const commentColumn = config.get<number>('commentColumn', 95); // Default to 95
-        const tabSize = vscode.workspace.getConfiguration('editor').get<number>('tabSize', 4); // Default to 4
-        const targetColumn = commentColumn - 1; // Convert to 0-based
+        const tabStop = config.get<number>('tabStop', 100);
+        const tabSize = vscode.workspace.getConfiguration('editor').get<number>('tabSize', 4);
+        const targetColumn = tabStop - 1; // Convert to 0-based for internal calculations
 
-        // Process each selection (cursor)
-        editor.edit(editBuilder => {
+        await editor.edit(editBuilder => {
             const newSelections: vscode.Selection[] = [];
 
             for (const selection of editor.selections) {
@@ -35,18 +67,18 @@ export function activate(context: vscode.ExtensionContext) {
                 const text = line.text;
                 const commentIndex = text.indexOf('--');
 
-                // Skip if there's no comment or the cursor is after --
-                if (commentIndex === -1 || selection.active.character > commentIndex) {
-                    newSelections.push(selection); // Keep the cursor unchanged
+                // Skip if there's no comment or the cursor is not immediately before --
+                if (commentIndex === -1 || selection.active.character !== commentIndex) {
+                    newSelections.push(selection);
                     continue;
                 }
 
                 // Calculate the visual column position of --
                 const currentCommentPosition = getVisualColumn(text, commentIndex, tabSize);
 
-                // Check if the comment is already at or beyond the target column
+                // Skip if the comment is already at or beyond the target column
                 if (currentCommentPosition >= targetColumn) {
-                    newSelections.push(selection); // Keep the cursor unchanged
+                    newSelections.push(selection);
                     continue;
                 }
 
@@ -65,62 +97,51 @@ export function activate(context: vscode.ExtensionContext) {
                 const lineRange = line.range;
                 editBuilder.replace(lineRange, newLineText);
 
-                // Update the cursor position to the start of the comment (just before --)
+                // Update the cursor position to just before the -- (at targetColumn, which is tabStop - 1)
                 const newPosition = new vscode.Position(line.lineNumber, trimmedBeforeComment.length + spacesNeeded);
                 newSelections.push(new vscode.Selection(newPosition, newPosition));
             }
 
             // Update all cursor positions after the edit
             editor.selections = newSelections;
-        }).then(success => {
-            if (!success) {
-                // If the edit failed, fall back to default Tab behavior
-                vscode.commands.executeCommand('tab');
-            }
         });
+
+        // Ensure the context key is updated after the edit to prevent cursor movement
+        updateCursorContext();
     });
 
-    // Command to handle Backspace key for de-indenting comments with multi-line cursors
+    // Command to handle Backspace key for de-indenting comments
     const deIndentCommentOnBackspace = vscode.commands.registerCommand('vhdlCommentAligner.deIndentCommentOnBackspace', () => {
         const editor = vscode.window.activeTextEditor;
         if (!editor || editor.document.languageId !== 'vhdl') {
-            return; // Only process VHDL files
+            return;
         }
 
         const config = vscode.workspace.getConfiguration('vhdlCommentAligner');
-        const commentColumn = config.get<number>('commentColumn', 95); // Default to 95
-        const tabSize = vscode.workspace.getConfiguration('editor').get<number>('tabSize', 4); // Default to 4
-        const targetColumn = commentColumn - 1; // Convert to 0-based
+        const tabStop = config.get<number>('tabStop', 100);
+        const tabSize = vscode.workspace.getConfiguration('editor').get<number>('tabSize', 4);
+        const targetColumn = tabStop - 1; // Convert to 0-based for internal calculations
 
-        let editApplied = false;
+        let shouldHandle = false;
+        const newSelections: vscode.Selection[] = [];
 
-        // Process each selection (cursor)
-        editor.edit(editBuilder => {
-            const newSelections: vscode.Selection[] = [];
+        for (const selection of editor.selections) {
+            const line = editor.document.lineAt(selection.active.line);
+            const text = line.text;
+            const commentIndex = text.indexOf('--');
 
-            for (const selection of editor.selections) {
-                const line = editor.document.lineAt(selection.active.line);
-                const text = line.text;
-                const commentIndex = text.indexOf('--');
+            // Skip if there's no comment or the cursor is not immediately before --
+            if (commentIndex === -1 || selection.active.character !== commentIndex) {
+                newSelections.push(selection);
+                continue;
+            }
 
-                // Skip if there's no comment or the cursor is after --
-                if (commentIndex === -1 || selection.active.character > commentIndex) {
-                    newSelections.push(selection); // Keep the cursor unchanged
-                    continue;
-                }
+            // Calculate the visual column position of --
+            const currentCommentPosition = getVisualColumn(text, commentIndex, tabSize);
 
-                // Calculate the visual column position of --
-                const currentCommentPosition = getVisualColumn(text, commentIndex, tabSize);
-
-                // Debug logging to understand why Backspace might not work
-                console.log(`Line ${line.lineNumber + 1}: Comment at visual column ${currentCommentPosition}, Target: ${targetColumn}`);
-
-                // Check if the comment is past the target column
-                if (currentCommentPosition <= targetColumn) {
-                    console.log(`Line ${line.lineNumber + 1}: Comment already at or before target column, skipping.`);
-                    newSelections.push(selection); // Keep the cursor unchanged
-                    continue;
-                }
+            // Only handle de-indentation if the comment is past the target column
+            if (currentCommentPosition > targetColumn) {
+                shouldHandle = true;
 
                 // Split the line into non-comment and comment parts
                 const beforeComment = text.substring(0, commentIndex);
@@ -135,23 +156,26 @@ export function activate(context: vscode.ExtensionContext) {
 
                 // Replace the line
                 const lineRange = line.range;
-                editBuilder.replace(lineRange, newLineText);
-                editApplied = true;
+                editor.edit(editBuilder => {
+                    editBuilder.replace(lineRange, newLineText);
+                });
 
-                // Update the cursor position to the start of the comment (just before --)
+                // Update the cursor position to just before the tab stop (so -- starts at tabStop)
                 const newPosition = new vscode.Position(line.lineNumber, trimmedBeforeComment.length + spacesNeeded);
                 newSelections.push(new vscode.Selection(newPosition, newPosition));
+            } else {
+                // If at or before the target column, let the default Backspace behavior occur
+                newSelections.push(selection);
             }
+        }
 
-            // Update all cursor positions after the edit
-            editor.selections = newSelections;
-        }).then(success => {
-            if (!success || !editApplied) {
-                // If the edit failed or no changes were applied, fall back to default Backspace behavior
-                console.log('No edits applied, falling back to default Backspace behavior.');
-                vscode.commands.executeCommand('deleteLeft');
-            }
-        });
+        // Update all cursor positions after the edit
+        editor.selections = newSelections;
+
+        // If we didn't handle the Backspace, execute the default Backspace command
+        if (!shouldHandle) {
+            return vscode.commands.executeCommand('deleteLeft');
+        }
     });
 
     // Register the commands

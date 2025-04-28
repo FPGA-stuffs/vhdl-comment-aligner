@@ -1,15 +1,15 @@
 {
     "name": "vhdl-comment-aligner",
     "displayName": "VHDL Comment Aligner",
-    "description": "Automatically aligns VHDL comments to a specified column",
+    "description": "Aligns VHDL comments to a configurable tab stop",
     "version": "0.0.1",
-    "publisher": "samuelosafehinti",
-    "author": "Samuel Osafehinti",
+    "publisher": "samuel-osafehinti",
+    "author": "samuel-osafehinti",
     "license": "MIT",
     "engines": {
       "vscode": "^1.85.0"
     },
-    "categoriescier": [
+    "categories": [
       "Formatters",
       "Programming Languages"
     ],
@@ -21,11 +21,11 @@
       "configuration": {
         "title": "VHDL Comment Aligner",
         "properties": {
-          "vhdlCommentAligner.commentColumn": {
+          "vhdlCommentAligner.tabStop": {
             "type": "integer",
-            "default": 95,
-            "minimum": 90,
-            "description": "The column number where VHDL comments should start (1-based)."
+            "default": 100,
+            "minimum": 100,
+            "description": "The column number where VHDL comments should be aligned (1-based)."
           }
         }
       },
@@ -33,12 +33,12 @@
         {
           "command": "vhdlCommentAligner.alignCommentOnTab",
           "key": "tab",
-          "when": "editorTextFocus && editorLangId == vhdl && !inSnippetMode && !suggestWidgetVisible"
+          "when": "editorTextFocus && editorLangId == vhdl && !inSnippetMode && !suggestWidgetVisible && vhdlCommentAligner.cursorBeforeComment"
         },
         {
           "command": "vhdlCommentAligner.deIndentCommentOnBackspace",
           "key": "backspace",
-          "when": "editorTextFocus && editorLangId == vhdl && !inSnippetMode && !suggestWidgetVisible"
+          "when": "editorTextFocus && editorLangId == vhdl && !inSnippetMode && !suggestWidgetVisible && vhdlCommentAligner.cursorBeforeComment"
         }
       ]
     },
@@ -54,6 +54,6 @@
     },
     "repository": {
       "type": "git",
-      "url": "https://github.com/FPGA-stuffs/vhdl-comment-aligner"
+      "url": "https://github.com/FPGA-stuffs/vhdl-comment-aligner.git"
     }
   }

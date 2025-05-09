@@ -2,7 +2,7 @@
     "name": "vhdl-comment-aligner",
     "displayName": "VHDL Comment Aligner",
     "description": "Aligns VHDL comments to a configurable tab stop",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "publisher": "samuel-osafehinti",
     "author": "samuel-osafehinti",
     "license": "MIT",

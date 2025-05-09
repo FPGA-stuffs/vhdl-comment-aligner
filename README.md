@@ -49,6 +49,10 @@ Known Issues
 None reported yet. If you encounter any issues, please report them on the GitHub repository.
 
 Release Notes
+0.0.2
+
+Fixed Backspace functionality to support multi-line selections, ensuring selected text across multiple lines is deleted as expected.
+
 0.0.1
 Initial release of VHDL Comment Aligner:
 

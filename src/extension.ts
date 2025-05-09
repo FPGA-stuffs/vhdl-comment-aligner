@@ -126,6 +126,12 @@ export function activate(context: vscode.ExtensionContext) {
         const newSelections: vscode.Selection[] = [];
 
         for (const selection of editor.selections) {
+            // Check if this is a multi-line selection
+            if (selection.start.line !== selection.end.line) {
+                // Delegate to default Backspace behavior for multi-line selections
+                return vscode.commands.executeCommand('deleteLeft');
+            }
+
             const line = editor.document.lineAt(selection.active.line);
             const text = line.text;
             const commentIndex = text.indexOf('--');

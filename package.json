@@ -2,7 +2,7 @@
     "name": "vhdl-comment-aligner",
     "displayName": "VHDL Comment Aligner",
     "description": "Aligns VHDL comments to a configurable tab stop",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "publisher": "samuel-osafehinti",
     "author": "samuel-osafehinti",
     "license": "MIT",
@@ -23,8 +23,8 @@
         "properties": {
           "vhdlCommentAligner.tabStop": {
             "type": "integer",
-            "default": 100,
-            "minimum": 100,
+            "default": 80,
+            "minimum": 40,
             "description": "The column number where VHDL comments should be aligned (1-based)."
           }
         }

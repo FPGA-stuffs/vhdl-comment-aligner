@@ -55,7 +55,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         const config = vscode.workspace.getConfiguration('vhdlCommentAligner');
-        const tabStop = config.get<number>('tabStop', 100);
+        const tabStop = config.get<number>('tabStop', 80); // Use user setting with default 80
         const tabSize = vscode.workspace.getConfiguration('editor').get<number>('tabSize', 4);
         const targetColumn = tabStop - 1; // Convert to 0-based for internal calculations
 
@@ -97,7 +97,7 @@ export function activate(context: vscode.ExtensionContext) {
                 const lineRange = line.range;
                 editBuilder.replace(lineRange, newLineText);
 
-                // Update the cursor position to just before the -- (at targetColumn, which is tabStop - 1)
+                // Update the cursor position to just before the -- (at targetColumn)
                 const newPosition = new vscode.Position(line.lineNumber, trimmedBeforeComment.length + spacesNeeded);
                 newSelections.push(new vscode.Selection(newPosition, newPosition));
             }
@@ -118,7 +118,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         const config = vscode.workspace.getConfiguration('vhdlCommentAligner');
-        const tabStop = config.get<number>('tabStop', 100);
+        const tabStop = config.get<number>('tabStop', 80); // Use user setting with default 80
         const tabSize = vscode.workspace.getConfiguration('editor').get<number>('tabSize', 4);
         const targetColumn = tabStop - 1; // Convert to 0-based for internal calculations
 

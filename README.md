@@ -2,11 +2,11 @@ VHDL Comment Aligner
 The VHDL Comment Aligner is a Visual Studio Code extension designed to automatically align VHDL comments (starting with --) to a configurable tab stop. This extension enhances productivity for VHDL developers by ensuring consistent comment alignment, especially in large codebases.
 Features
 
-Automatic Comment Alignment: Aligns VHDL comments to a user-defined tab stop (default: column 100) when the Tab key is pressed immediately before a -- comment.
+Automatic Comment Alignment: Aligns VHDL comments to a user-defined tab stop (default: column 80) when the Tab key is pressed immediately before a -- comment.
 De-indentation with Backspace: De-indents comments to the tab stop when Backspace is pressed immediately before a -- comment, if the comment is past the tab stop.
 Multi-Line Support: Works with single or multi-line cursors, aligning or de-indenting multiple comments at once.
 Preserves Normal Tab/Backspace Behavior: Normal Tab and Backspace functionality remains unaffected outside of VHDL comments.
-Configurable Tab Stop: Customize the alignment column via the vhdlCommentAligner.tabStop setting (minimum: 100).
+Configurable Tab Stop: Customize the alignment column via the vhdlCommentAligner.tabStop setting (minimum: 40).
 
 Requirements
 
@@ -16,7 +16,7 @@ This extension is designed for VHDL files (.vhd).
 Extension Settings
 This extension contributes the following settings:
 
-vhdlCommentAligner.tabStop: The column number where VHDL comments should be aligned (1-based). Default is 100, with a minimum value of 100.
+vhdlCommentAligner.tabStop: The column number where VHDL comments should be aligned (1-based). Default is 80, with a minimum value of 40.
 
 To configure the tab stop:
 
@@ -31,10 +31,10 @@ Place your cursor immediately before a -- comment:signal a : std_logic;| -- comm
 
 
 Press Tab:
-If the comment is before the tab stop, it will be indented to the configured column (e.g., 100):signal a : std_logic;                                                                                  | -- comment
+If the comment is before the tab stop, it will be indented to the configured column (e.g., 80):signal a : std_logic;                                                                                | -- comment
 
 
-The cursor will remain just before the -- (e.g., at column 99).
+The cursor will remain just before the -- (e.g., at column 79).
 
 
 Press Backspace:
@@ -49,7 +49,12 @@ Known Issues
 None reported yet. If you encounter any issues, please report them on the GitHub repository.
 
 Release Notes
-0.0.2
+0.0.3
+
+Updated vhdlCommentAligner.tabStop configuration: Minimum value changed to 40, default value changed to 80.
+Removed hard-coded tab stop value (100) in extension.ts, ensuring the extension uses the user-configured tab stop value.
+
+0.0.1a
 
 Fixed Backspace functionality to support multi-line selections, ensuring selected text across multiple lines is deleted as expected.
 
